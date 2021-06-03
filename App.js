@@ -14,6 +14,8 @@ import store from "./store";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import RegisterScreen from "./app/screens/registerScreen/components/RegisterScreen";
+import MenuScreen from "./app/screens/menuScreen/components/MenuScreen";
+import MapScreen from "./app/screens/mapScreen/components/MapScreen";
 
 const Stack = createStackNavigator();
 
@@ -29,6 +31,11 @@ const App: () => Node = () => {
           <Stack.Screen name={"Register"}
                         component={RegisterScreen} />
 
+          <Stack.Screen name={"Menu"}
+                        component={MenuScreen} />
+
+          <Stack.Screen name={"Map"}
+                        component={MapScreen} />
 
         </Stack.Navigator>
       </NavigationContainer>

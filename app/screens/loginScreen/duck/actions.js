@@ -5,11 +5,11 @@ const login = item => ({
 });
 
 const logout = () => ({
-  types: types.USER_LOGOUT,
+  type: types.USER_LOGOUT,
 });
 
 const userInfo = () => ({
-  types: types.USER_INFO,
+  type: types.USER_INFO,
 });
 
 export default {

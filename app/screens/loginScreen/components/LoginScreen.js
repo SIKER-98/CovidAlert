@@ -1,22 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { COLORS, FONTS, SIZES } from "../../../constants/theme";
 import { connect, useSelector } from "react-redux";
 // import mapDispatchToProps from "react-redux/lib/connect/mapDispatchToProps";
 import actions from "../duck/actions";
 
-const LoginScreen = ({ route, navigation, login }) => {
+const LoginScreen = ({ route, navigation, login, logout }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [test, setTest] = useState("");
+
+  useEffect(() => {
+    logout();
+  }, []);
 
   const loginClick = () => {
     if (email === "user@user.user" && password === "user") {
       setErrorMessage("Logged in");
       const user = { email: email, userId: 1, username: "user" };
       login(user);
-
+      navigation.push("Menu");
       return;
     }
 
@@ -63,7 +67,7 @@ const LoginScreen = ({ route, navigation, login }) => {
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={()=>navigation.navigate('Register',{})}>
+      <TouchableOpacity onPress={() => navigation.navigate("Register", {})}>
         <Text style={styles.signupText}>Signup</Text>
       </TouchableOpacity>
     </View>
@@ -72,7 +76,7 @@ const LoginScreen = ({ route, navigation, login }) => {
 
 const mapDispatchToProps = dispatch => ({
   login: user => dispatch(actions.login(user)),
-
+  logout: () => dispatch(actions.logout()),
 });
 
 export default connect(null, mapDispatchToProps)(LoginScreen);
