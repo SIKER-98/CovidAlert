@@ -1,11 +1,29 @@
 import React, { useState } from "react";
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import { connect, useSelector } from "react-redux";
+// import mapDispatchToProps from "react-redux/lib/connect/mapDispatchToProps";
+import actions from "../duck/actions";
 
-const LoginScreen = ({ route, navigation }) => {
+const LoginScreen = ({ route, navigation, login }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [test, setTest] = useState("");
+
+  const loginClick = () => {
+    if (email === "user@user.user" && password === "user") {
+      setErrorMessage("Logged in");
+      const user = { email: email, userId: 1, username: "user" };
+      login(user);
+
+      return;
+    }
+
+    setErrorMessage("Invalida data");
+  };
+
+  const userInfo = useSelector(state => state.users);
 
   return (
     <View style={styles.container}>
@@ -14,6 +32,7 @@ const LoginScreen = ({ route, navigation }) => {
 
       {/*informacja o bledzie*/}
       <Text style={styles.errorMessage}>{errorMessage}</Text>
+      <Text style={styles.errorMessage}>{userInfo.userId} {userInfo.username} {userInfo.email}</Text>
 
       {/*pola tekstowe*/}
       <View style={styles.inputView}>
@@ -38,18 +57,25 @@ const LoginScreen = ({ route, navigation }) => {
         <Text style={styles.forgotText}>Forgot Password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginBtn}>
+      <TouchableOpacity style={styles.loginBtn}
+                        onPress={() => loginClick()}
+      >
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
+      <TouchableOpacity onPress={()=>navigation.navigate('Register',{})}>
         <Text style={styles.signupText}>Signup</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-export default LoginScreen;
+const mapDispatchToProps = dispatch => ({
+  login: user => dispatch(actions.login(user)),
+
+});
+
+export default connect(null, mapDispatchToProps)(LoginScreen);
 
 const styles = StyleSheet.create({
   container: {
