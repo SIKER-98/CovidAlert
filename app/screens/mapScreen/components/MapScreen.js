@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { BackHandler, Text, View } from "react-native";
+import { BackHandler, Text, StyleSheet, View, Alert } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 
+import Geolocation from "@react-native-community/geolocation";
 
 const MapScreen = ({ route, navigation }) => {
 
@@ -11,11 +12,34 @@ const MapScreen = ({ route, navigation }) => {
     }
 
     useEffect(() => {
+      findCoordinates();
       BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
       return () => {
         BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
       };
     }, []);
+
+    const [location, setLocation] = useState();
+    const [myLatitude, setMyLatitude] = useState(0);
+    const [myLongitude, setMyLongitude] = useState(0);
+
+    const findCoordinates = () => {
+      Geolocation.getCurrentPosition(
+        position => {
+          const location = JSON.stringify(position);
+
+          setLocation(location);
+          Alert.alert(location);
+          console.log(position.coords);
+          setMyLatitude(position.coords.latitude)
+          setMyLongitude(position.coords.longitude)
+        },
+        error => Alert.alert(error.message),
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+      );
+
+      Alert.alert(location);
+    };
 
 
     return (
@@ -23,18 +47,13 @@ const MapScreen = ({ route, navigation }) => {
         <MapView
           style={{ flex: 1 }}
           initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
+            latitude: myLatitude,
+            longitude: myLongitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
-          }}>
-          <Marker
-            coordinate={{
-              latitude: 37.78825, longitude: -122.4324,
-            }}
-            title="this is a marker"
-            description="this is a marker example"
-          />
+          }}
+        >
+
         </MapView>
       </View>
     )
@@ -43,3 +62,6 @@ const MapScreen = ({ route, navigation }) => {
 ;
 
 export default MapScreen;
+
+
+const styles = StyleSheet.create({});
