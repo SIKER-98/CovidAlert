@@ -3,6 +3,7 @@ import { BackHandler, Text, StyleSheet, View, Alert } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 
 import Geolocation from "@react-native-community/geolocation";
+// import findCoordinates from "../../functions/findCoordinates";
 
 const MapScreen = ({ route, navigation }) => {
 

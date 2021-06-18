@@ -1,4 +1,4 @@
-import types from "./types";
+import types from "../types/userTypes";
 
 const INITIAL_STATE = {
   name: "userStatus",
@@ -9,8 +9,6 @@ const INITIAL_STATE = {
 
 const userReducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
-    case types.USER_INFO:
-      return { ...state };
     case types.USER_LOGIN:
       return { ...state, ...action.item };
     case types.USER_LOGOUT:

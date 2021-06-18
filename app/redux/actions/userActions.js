@@ -1,4 +1,4 @@
-import types from "./types";
+import types from "../types/userTypes";
 
 const login = item => ({
   type: types.USER_LOGIN, item,

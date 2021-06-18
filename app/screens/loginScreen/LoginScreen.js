@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
-import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import { connect, useSelector } from "react-redux";
 // import mapDispatchToProps from "react-redux/lib/connect/mapDispatchToProps";
-import actions from "../duck/actions";
+import actions from "../../redux/actions/userActions";
 
 const LoginScreen = ({ route, navigation, login, logout }) => {
   const [email, setEmail] = useState("");
@@ -15,11 +15,17 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
     logout();
   }, []);
 
+  const clearForm = ()=>{
+    setEmail('')
+    setPassword('')
+  }
+
   const loginClick = () => {
     if (email === "user@user.user" && password === "user") {
       setErrorMessage("Logged in");
       const user = { email: email, userId: 1, username: "user" };
       login(user);
+      clearForm()
       navigation.push("Menu");
       return;
     }
@@ -45,6 +51,7 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
           placeholder={"Email..."}
           placeholderTextColor={COLORS.onPrimary}
           onChangeText={text => setEmail(text)}
+          defaultValue={'user@user.user'}
         />
       </View>
 
