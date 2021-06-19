@@ -27,6 +27,7 @@ const App: () => Node = () => {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}
                          initialRouteName={"Login"}>
+
           <Stack.Screen name={"Login"}
                         component={LoginScreen} />
 
