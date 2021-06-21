@@ -16,6 +16,8 @@ const resetReport = () => ({
   type: types.REPORT_RESET,
 });
 
+
+
 export default {
   addReport,
   endReport,

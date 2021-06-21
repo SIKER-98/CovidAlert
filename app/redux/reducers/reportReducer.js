@@ -18,13 +18,13 @@ const reportReducer = (state = INITIAL_STATE, action) => {
     case types.REPORT_END:
       // TODO: end report
       return {
-        ...state, reportList: [...state.reportList.filter(item => item !== action.item)],
+        ...state, reportList: [...state.reportList.filter(item => item.id !== action.item)],
       };
 
     case types.REPORT_DELETE:
       // TODO:delete report
       return {
-        ...state, reportList: [...state.reportList.filter(item => item !== action.item)],
+        ...state, reportList: [...state.reportList.filter(item => item.id !== action.item)],
       };
 
     case types.REPORT_RESET:

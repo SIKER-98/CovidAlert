@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Alert, BackHandler, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import { connect, useSelector } from "react-redux";
-import reportActions from "../../redux/actions/reportActions";
 import findCoordinates from "../../functions/findCoordinates";
+import axios from "axios";
 
-import store from "../../redux/store";
 
-const HelpScreen = ({ route, navigation, addReport }) => {
+// const HelpScreen = ({ route, navigation, addReport }) => {
+const HelpScreen = ({ route, navigation }) => {
   const [number, setNumber] = useState("");
   const [message, setMessage] = useState("");
   const [coords, setCoords] = useState({});
@@ -17,6 +17,23 @@ const HelpScreen = ({ route, navigation, addReport }) => {
     navigation.goBack();
     return true;
   }
+
+  const pushRequest = async (item) => {
+    const api = "https://mobilki-backend.herokuapp.com/activeRequests/add";
+
+    let status = -1;
+    console.log(item);
+
+    const params = new URLSearchParams(item)
+
+    await axios.post(api+'?'+params)
+      .then(res => {
+        console.log(res.status);
+        status = res.status;
+      });
+
+    return status;
+  };
 
   useEffect(() => {
     findCoordinates(setCoords);
@@ -56,24 +73,30 @@ const HelpScreen = ({ route, navigation, addReport }) => {
     return true;
   };
 
-  const pressAddReport = () => {
+  const pressAddReport = async () => {
     const validation = validateReport(user.userId, user.username, coords.latitude, coords.longitude, message, number);
 
     if (validation) {
       const item = {
-        userId: user.userId,
-        username: user.username,
         latitude: coords.latitude,
         longitude: coords.longitude,
         message: message,
-        phoneNumber: number,
+        telephoneNumber: number,
+        userId: user.userId,
       };
       console.log("New report:", item);
+      console.log(Date.now());
 
       //TODO: wysalnie na backend
-      addReport(item);
-      Alert.alert("Report added!");
-      navigation.navigate("Menu");
+      const status = await pushRequest(item);
+      console.log(status);
+
+      if (status === 200) {
+        Alert.alert("Report added!");
+        navigation.navigate("Menu");
+      } else {
+        Alert.alert("Something went wrong!");
+      }
     }
 
   };
@@ -112,7 +135,7 @@ const HelpScreen = ({ route, navigation, addReport }) => {
 
 
 const mapDispatchToProps = dispatch => ({
-  addReport: item => dispatch(reportActions.addReport(item)),
+  // addReport: item => dispatch(reportActions.addReport(item)),
 });
 
 export default connect(null, mapDispatchToProps)(HelpScreen);

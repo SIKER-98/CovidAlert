@@ -4,17 +4,69 @@ import { BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } fro
 import findCoordinates from "../../functions/findCoordinates";
 import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import reportActions from "../../redux/actions/reportActions";
+import { GetUserReport } from "../../redux/operations/reportOperations";
+import axios from "axios";
 
-const ReportScreen = ({ route, navigation, endReport, deleteReport }) => {
-  const reports = useSelector(state => state.reports);
+const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, addReport, resetReport, user }) => {
 
   function handleBackButtonClick() {
     navigation.goBack();
     return true;
   }
 
-  useEffect(() => {
+  const getReports = async (id) => {
+    axios.get("https://mobilki-backend.herokuapp.com/activeRequests/byUser", { params: { userId: id } })
+      .then(res => {
+        console.log(res.data);
+        res.data.map(item => addReport(item));
+      });
+
+  };
+
+  const archiveRequest = async (requestId) => {
+    const api = "https://mobilki-backend.herokuapp.com/activeRequests/archive";
+
+    let status = -1;
+    const params = new URLSearchParams({
+      requestId,
+      performerId: user.userId,
+    });
+
+    await axios.get(api + "?" + params)
+      .then(res => {
+        console.log("DELETE:", res.status);
+        status = res.status;
+      });
+
+    if (status === 200)
+      endReport(requestId);
+  };
+
+  const deleteRequest = async (requestId) => {
+    const api = "https://mobilki-backend.herokuapp.com/activeRequests/delete";
+
+    let status = -1;
+    const params = new URLSearchParams({
+      requestId,
+    });
+
+    await axios.delete(api + "?" + params)
+      .then(res => {
+        console.log("DELETE:", res.status);
+        status = res.status;
+      });
+
+    if (status === 200)
+      deleteReport(requestId);
+  };
+
+
+  useEffect(async () => {
     BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
+
+    console.log(user);
+    resetReport();
+    await getReports(user.userId);
 
     return () => {
       BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
@@ -25,17 +77,19 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport }) => {
     <View style={styles.container}>
       <Text style={styles.logo}>REPORTS:</Text>
 
-      <ScrollView style={{width:'100%'}}>
+      <ScrollView style={{ width: "100%" }}>
         <View style={styles.scrollContainer}>
           {reports.reportList.map(report => (
             <View style={styles.inputView}>
               <Text style={styles.inputText}>{report.message}</Text>
+              <Text style={styles.dateText}>Date:{report.creationTime.slice(0, 10)}</Text>
+              <Text style={styles.dateText}>Time:{report.creationTime.slice(11, 19)}</Text>
 
               <View style={styles.verticalList}>
-                <TouchableOpacity onPress={() => endReport(report)}>
+                <TouchableOpacity onPress={() => archiveRequest(report.id)}>
                   <Text style={styles.errorMessage}>End</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => deleteReport(report)}>
+                <TouchableOpacity onPress={() => deleteRequest(report.id)}>
                   <Text style={styles.errorMessage}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -48,12 +102,19 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport }) => {
   );
 };
 
-const mapDispatchToProps = dispatch => ({
-  endReport: item => dispatch(reportActions.endReport(item)),
-  deleteReport: item => dispatch(reportActions.deleteReport(item)),
+const mapStateToProps = state => ({
+  reports: state.reports,
+  user: state.users,
 });
 
-export default connect(null, mapDispatchToProps)(ReportScreen);
+const mapDispatchToProps = dispatch => ({
+  resetReport: () => dispatch(reportActions.resetReport()),
+  endReport: item => dispatch(reportActions.endReport(item)),
+  deleteReport: item => dispatch(reportActions.deleteReport(item)),
+  addReport: item => dispatch(reportActions.addReport(item)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ReportScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -91,6 +152,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZES.padding * 2,
     paddingTop: SIZES.padding,
   },
+  dateText: {
+    ...FONTS.h3,
+    color: COLORS.onSurface,
+    textAlign: "center",
+  },
 
   inputViewMulti: {
     width: "80%",
@@ -104,6 +170,7 @@ const styles = StyleSheet.create({
     ...FONTS.h3,
     color: COLORS.onPrimary,
     textAlign: "center",
+    marginBottom: 10,
   },
 
   loginBtn: {

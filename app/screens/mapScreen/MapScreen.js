@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { BackHandler, Text, StyleSheet, View, Alert, Image, TouchableOpacity, Linking } from "react-native";
+import { BackHandler, StyleSheet, View, TouchableOpacity, Linking, Image } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
-
-import Geolocation from "@react-native-community/geolocation";
 import findCoordinates from "../../functions/findCoordinates";
-
 import icons from "../../assets/icons";
-import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import CustomMarker from "./components/CustomMarker";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import locationActions from "../../redux/actions/locationActions";
 import ReportInfo from "./components/ReportInfo";
+import { COLORS } from "../../constants/theme";
+import axios from "axios";
 
-const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
+const MapScreen = ({ route, navigation, locationReset, locationAdd, reports, users }) => {
   const [myCoords, setMyCoords] = useState({});
   const [selectedReport, setSelectedReport] = useState(null);
+  const [actualRegion, setActualRegion] = useState(null);
 
   function handleBackButtonClick() {
     navigation.goBack();
@@ -23,7 +22,8 @@ const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
 
   useEffect(async () => {
     findCoordinates(setMyCoords);
-    locationRefresh();
+    await refreshPress();
+
 
     BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
 
@@ -37,15 +37,64 @@ const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
     Linking.openURL(`tel:${selectedReport.number}`);
   }
 
+  function calculateSquare() {
+    let square = {};
+    if (actualRegion && myCoords?.latitude) {
+      const maxLatitude = actualRegion.latitude + actualRegion.latitudeDelta;
+      const minLatitude = actualRegion.latitude - actualRegion.latitudeDelta;
+      const maxLongitude = actualRegion.longitude + actualRegion.longitudeDelta;
+      const minLongitude = actualRegion.longitude - actualRegion.longitudeDelta;
+
+      square = { maxLatitude, maxLongitude, minLatitude, minLongitude };
+    }
+    return square;
+  }
+
+  const refreshPress = async () => {
+    console.log("REFRESH");
+
+    while (!actualRegion.latitude) {
+      console.log(actualRegion);
+    }
+
+    let square = calculateSquare();
+
+    locationReset();
+
+    const api = "https://mobilki-backend.herokuapp.com/activeRequests/byArea?";
+    const params = new URLSearchParams({
+      latitudeMAX: square.maxLatitude,
+      latitudeMIN: square.minLatitude,
+      longitudeMAX: square.maxLongitude,
+      longitudeMIN: square.minLongitude,
+    });
+
+    axios.get(api + params)
+      .then(res => {
+        console.log("refresh:", res.data);
+        res.data.map(item => locationAdd(item));
+      })
+      .catch(e => {
+        console.log(e.message);
+      });
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      {}
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
           ...myCoords,
-          latitudeDelta: 0.0121,
-          longitudeDelta: 0.0121,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
         }}
+
+        onRegionChangeComplete={(region) => {
+          setActualRegion(region);
+          console.log("region: ", region);
+        }
+        }
       >
         {/*my location*/}
         <CustomMarker coords={myCoords}
@@ -53,8 +102,10 @@ const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
         />
 
         {/*report locations*/}
-        {reports?.map(x => (
-          <TouchableOpacity onPress={() => setSelectedReport(x)}>
+        {reports?.filter(report => report.userId !== 2).map((x, index) => (
+          <TouchableOpacity onPress={() => setSelectedReport(x)}
+                            key={index}
+          >
             <CustomMarker coords={x}
                           icon={icons.redPin}
                           selected={setSelectedReport}
@@ -66,24 +117,19 @@ const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
       </MapView>
 
       {selectedReport &&
-      <View style={styles.infoContainer}>
-        <Text style={styles.usernameText}>{selectedReport.username.toUpperCase()}</Text>
-        <Text style={styles.messageText}>{selectedReport.message}</Text>
-        <TouchableOpacity style={styles.callButton}
-                          onPress={() => makeCall()}
-        >
-          <Text style={styles.callText}>CALL TO HE/SHE</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.closeButton}
-                          onPress={() => setSelectedReport(null)}
-        >
-          <Image source={icons.close}
-                 style={styles.closeIcon}
-          />
-        </TouchableOpacity>
-      </View>
+      <ReportInfo selectedReport={selectedReport}
+                  makeCall={makeCall}
+                  setSelectedReport={setSelectedReport}
+      />
       }
+
+      <TouchableOpacity style={styles.refreshButton}
+                        onPress={() => refreshPress()}
+      >
+        <Image source={icons.refresh}
+               style={styles.icon}
+        />
+      </TouchableOpacity>
 
     </View>
   )
@@ -92,10 +138,12 @@ const MapScreen = ({ route, navigation, locationRefresh, reports }) => {
 
 const mapStateToProps = state => ({
   reports: state.locations.reportCoords,
+  users: state.users,
 });
 
 const mapDispatchToProps = dispatch => ({
-  locationRefresh: () => dispatch(locationActions.locationRefresh()),
+  locationAdd: (item) => dispatch(locationActions.locationAdd(item)),
+  locationReset: () => dispatch(locationActions.locationReset()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapScreen);
@@ -124,61 +172,25 @@ const customData = [
 ];
 
 const styles = StyleSheet.create({
-  infoContainer: {
+  refreshButton: {
     position: "absolute",
-    backgroundColor: COLORS.surface,
-    width: "80%",
-    // height: 100,
-    bottom: 30,
-    marginHorizontal: "10%",
-    borderRadius: SIZES.radius,
+    top: 15,
+    left: 15,
+
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 2,
     borderColor: COLORS.primary,
-    padding: SIZES.padding,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  usernameText: {
-    ...FONTS.h2,
-    color: COLORS.primary,
-  },
-  messageText: {
-    ...FONTS.body3,
-  },
-
-  callButton: {
-    marginTop: 10,
-    padding: SIZES.padding,
-    backgroundColor: COLORS.secondary,
-    borderRadius: SIZES.radius,
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  callText: {
-    ...FONTS.body2,
-    color: COLORS.onPrimary,
-  },
-
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-
-    width: 30,
-    height: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 30,
-
+    backgroundColor: COLORS.surface,
   },
-  closeIcon: {
+
+  icon: {
     width: "70%",
     height: "70%",
-    tintColor: COLORS.primary,
+    tintColor: COLORS.onSurface,
 
   },
 

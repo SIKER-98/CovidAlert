@@ -9,11 +9,16 @@ const locationRefresh = () => ({
 });
 
 const locationSetUser = item => ({
-  type: types.LOCATION_SET_USER,
+  type: types.LOCATION_SET_USER, item
 });
+
+const locationAdd = item =>({
+  type:types.LOCATION_ADD, item
+})
 
 export default {
   locationRefresh,
   locationReset,
   locationSetUser,
+  locationAdd
 };

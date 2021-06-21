@@ -22,7 +22,7 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
 
   const loginClick = () => {
     if (email === "user@user.user" && password === "user") {
-      setErrorMessage("Logged in");
+      // setErrorMessage("Logged in");
       const user = { email: email, userId: 1, username: "user" };
       login(user);
       clearForm()
@@ -42,7 +42,7 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
 
       {/*informacja o bledzie*/}
       <Text style={styles.errorMessage}>{errorMessage}</Text>
-      <Text style={styles.errorMessage}>{userInfo.userId} {userInfo.username} {userInfo.email}</Text>
+      {/*<Text style={styles.errorMessage}>{userInfo.userId} {userInfo.username} {userInfo.email}</Text>*/}
 
       {/*pola tekstowe*/}
       <View style={styles.inputView}>
@@ -51,7 +51,7 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
           placeholder={"Email..."}
           placeholderTextColor={COLORS.onPrimary}
           onChangeText={text => setEmail(text)}
-          defaultValue={'user@user.user'}
+          defaultValue={''}
         />
       </View>
 
@@ -60,13 +60,14 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
           style={styles.inputText}
           placeholder={"Password..."}
           placeholderTextColor={COLORS.onPrimary}
+          secureTextEntry={true}
           onChangeText={text => setPassword(text)}
         />
       </View>
 
-      <TouchableOpacity>
-        <Text style={styles.forgotText}>Forgot Password?</Text>
-      </TouchableOpacity>
+      {/*<TouchableOpacity>*/}
+      {/*  <Text style={styles.forgotText}>Forgot Password?</Text>*/}
+      {/*</TouchableOpacity>*/}
 
       <TouchableOpacity style={styles.loginBtn}
                         onPress={() => loginClick()}

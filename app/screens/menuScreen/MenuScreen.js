@@ -63,11 +63,11 @@ const MenuScreen = ({ route, navigation, logout }) => {
         <Text style={styles.btnText}>My reports list</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuBtn}
-                        onPress={() => navigation.navigate("Credits")}
-      >
-        <Text style={styles.btnText}>Credits</Text>
-      </TouchableOpacity>
+      {/*<TouchableOpacity style={styles.menuBtn}*/}
+      {/*                  onPress={() => navigation.navigate("Credits")}*/}
+      {/*>*/}
+      {/*  <Text style={styles.btnText}>Credits</Text>*/}
+      {/*</TouchableOpacity>*/}
 
       <TouchableOpacity style={styles.logoutBtn}
                         onPress={() => logoutPress()}

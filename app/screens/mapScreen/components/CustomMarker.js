@@ -5,10 +5,16 @@ import icons from "../../../assets/icons";
 import { COLORS } from "../../../constants/theme";
 
 const CustomMarker = (props) => {
+  const select = () => {
+
+    if (props.selected)
+      props.selected(props.coords);
+  };
+
 
   return (
     <Marker coordinate={props.coords}
-            onPress={() => props.selected(props.coords)}
+            onPress={() => select()}
     >
       <View style={styles.markerView}>
         <Image source={props.icon}
