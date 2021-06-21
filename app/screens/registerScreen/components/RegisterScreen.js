@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import axios from "../../../api/axiosHelper";
 
 const RegisterScreen = ({ route, navigation, login }) => {
   const [email, setEmail] = useState("");
@@ -9,13 +10,14 @@ const RegisterScreen = ({ route, navigation, login }) => {
   const [password2, setPassword2] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  function registerClick() {
+  async function registerClick() {
     if (email === "") {
       setErrorMessage("Enter email address");
       return;
-    } else if (username === "") {
-      setErrorMessage("Enter username");
-      return;
+    // }
+    // else if (username === "") {
+    //   setErrorMessage("Enter username");
+    //   return;
     } else if (password1 === "") {
       setErrorMessage("Enter password");
       return;
@@ -27,7 +29,22 @@ const RegisterScreen = ({ route, navigation, login }) => {
       return;
     }
 
-    setErrorMessage("Register complete");
+    const api = "register";
+    let status = -1;
+
+    await axios.post(api, { email, password: password1 }, {})
+      .then(res => {
+        status = res.status;
+      });
+
+    if (status === 200) {
+      setErrorMessage("Register complete");
+      navigation.push("Login");
+    } else {
+      setErrorMessage("Something went wrong");
+    }
+
+
   }
 
   return (
@@ -46,13 +63,13 @@ const RegisterScreen = ({ route, navigation, login }) => {
         />
       </View>
 
-      <View style={styles.inputView}>
-        <TextInput style={styles.inputText}
-                   placeholder={"Username..."}
-                   placeholderTextColor={COLORS.onPrimary}
-                   onChangeText={text => setUsername(text)}
-        />
-      </View>
+      {/*<View style={styles.inputView}>*/}
+      {/*  <TextInput style={styles.inputText}*/}
+      {/*             placeholder={"Username..."}*/}
+      {/*             placeholderTextColor={COLORS.onPrimary}*/}
+      {/*             onChangeText={text => setUsername(text)}*/}
+      {/*  />*/}
+      {/*</View>*/}
 
       <View style={styles.inputView}>
         <TextInput style={styles.inputText}

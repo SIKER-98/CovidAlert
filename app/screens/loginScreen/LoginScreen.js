@@ -4,6 +4,7 @@ import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import { connect, useSelector } from "react-redux";
 // import mapDispatchToProps from "react-redux/lib/connect/mapDispatchToProps";
 import actions from "../../redux/actions/userActions";
+import axios from "../../api/axiosHelper";
 
 const LoginScreen = ({ route, navigation, login, logout }) => {
   const [email, setEmail] = useState("");
@@ -15,22 +16,30 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
     logout();
   }, []);
 
-  const clearForm = ()=>{
-    setEmail('')
-    setPassword('')
-  }
+  const clearForm = () => {
+    setEmail("");
+    setPassword("");
+  };
 
-  const loginClick = () => {
-    if (email === "user@user.user" && password === "user") {
-      // setErrorMessage("Logged in");
-      const user = { email: email, userId: 1, username: "user" };
-      login(user);
-      clearForm()
+  const loginClick = async () => {
+    const api = "login";
+
+    let status = -1;
+
+    await axios.post(api, { email, password }, {})
+      .then(res => {
+        console.log(res.data);
+        status = res.status;
+        axios.defaults.headers = { "Authorization": `Bearer ${res.data.token}` };
+        login({ email, userId: res.data.userId, token: res.data.token });
+      });
+
+    if (status === 200) {
+      clearForm();
       navigation.push("Menu");
-      return;
+    } else {
+      setErrorMessage("Invalida data");
     }
-
-    setErrorMessage("Invalida data");
   };
 
   const userInfo = useSelector(state => state.users);
@@ -51,7 +60,7 @@ const LoginScreen = ({ route, navigation, login, logout }) => {
           placeholder={"Email..."}
           placeholderTextColor={COLORS.onPrimary}
           onChangeText={text => setEmail(text)}
-          defaultValue={''}
+          defaultValue={""}
         />
       </View>
 

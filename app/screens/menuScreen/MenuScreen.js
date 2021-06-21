@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, TouchableOpacity, BackHandler, Alert } from "re
 import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import { connect, useDispatch, useSelector } from "react-redux";
 import actions from "../../redux/actions/userActions";
+import axiosHelper from "../../api/axiosHelper";
 
 const MenuScreen = ({ route, navigation, logout }) => {
   const user = useSelector(state => state.users);
@@ -36,6 +37,7 @@ const MenuScreen = ({ route, navigation, logout }) => {
 
   function logoutPress() {
     logout();
+    axiosHelper.defaults.headers = { "Authorization": "" };
     navigation.navigate("Login", {});
   }
 
@@ -43,7 +45,7 @@ const MenuScreen = ({ route, navigation, logout }) => {
     <View style={styles.container}>
 
       <Text style={styles.logo}>Covid Helper</Text>
-      <Text style={styles.userText}>Hello: {user.username}</Text>
+      <Text style={styles.userText}>Hello: {user.email}</Text>
 
       <TouchableOpacity style={styles.menuBtn}
                         onPress={() => navigation.navigate("Help")}

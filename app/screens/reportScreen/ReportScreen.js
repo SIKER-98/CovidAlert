@@ -1,13 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import findCoordinates from "../../functions/findCoordinates";
 import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import reportActions from "../../redux/actions/reportActions";
 import { GetUserReport } from "../../redux/operations/reportOperations";
-import axios from "axios";
+import axios from "../../api/axiosHelper";
 
 const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, addReport, resetReport, user }) => {
+  const [archiveReport, setArchiveReport] = useState([]);
 
   function handleBackButtonClick() {
     navigation.goBack();
@@ -15,7 +16,7 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
   }
 
   const getReports = async (id) => {
-    axios.get("https://mobilki-backend.herokuapp.com/activeRequests/byUser", { params: { userId: id } })
+    axios.get("activeRequests/byUser", { params: { userId: id } })
       .then(res => {
         console.log(res.data);
         res.data.map(item => addReport(item));
@@ -24,7 +25,7 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
   };
 
   const archiveRequest = async (requestId) => {
-    const api = "https://mobilki-backend.herokuapp.com/activeRequests/archive";
+    const api = "activeRequests/archive";
 
     let status = -1;
     const params = new URLSearchParams({
@@ -38,12 +39,14 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
         status = res.status;
       });
 
-    if (status === 200)
+    if (status === 200) {
+      await getArchiveRequests();
       endReport(requestId);
+    }
   };
 
   const deleteRequest = async (requestId) => {
-    const api = "https://mobilki-backend.herokuapp.com/activeRequests/delete";
+    const api = "activeRequests/delete";
 
     let status = -1;
     const params = new URLSearchParams({
@@ -60,6 +63,18 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
       deleteReport(requestId);
   };
 
+  const getArchiveRequests = async () => {
+    const api = "archivisedRequests?";
+
+    const params = new URLSearchParams({ userId: user.userId });
+
+    await axios.get(api + params)
+      .then(res => {
+        console.log("archive: ", res.data);
+        setArchiveReport(res.data);
+      });
+  };
+
 
   useEffect(async () => {
     BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
@@ -67,6 +82,7 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
     console.log(user);
     resetReport();
     await getReports(user.userId);
+    await getArchiveRequests();
 
     return () => {
       BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
@@ -93,6 +109,18 @@ const ReportScreen = ({ route, navigation, endReport, deleteReport, reports, add
                   <Text style={styles.errorMessage}>Delete</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          ))}
+
+          {/*  wygasle*/}
+          {archiveReport.map((item, key) => (
+            <View style={styles.archiveView} key={key}>
+              <Text style={styles.inputText}>{item.message}</Text>
+              <Text style={styles.dateText}>Post Date:{item.creationTime.slice(0, 10)}</Text>
+              <Text style={styles.dateText}>{item.creationTime.slice(11, 19)}</Text>
+
+              <Text style={styles.dateTextWhite}>End Date:{item.archivisationTime.slice(0, 10)}</Text>
+              <Text style={styles.dateTextWhite}>{item.archivisationTime.slice(11, 19)}</Text>
             </View>
           ))}
 
@@ -152,6 +180,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZES.padding * 2,
     paddingTop: SIZES.padding,
   },
+
+  archiveView: {
+    width: "80%",
+    backgroundColor: COLORS.secondary2,
+    borderRadius: SIZES.radius,
+    marginBottom: SIZES.padding * 2,
+    paddingHorizontal: SIZES.padding * 2,
+    paddingTop: SIZES.padding,
+  },
+
   dateText: {
     ...FONTS.h3,
     color: COLORS.onSurface,
@@ -193,6 +231,12 @@ const styles = StyleSheet.create({
     ...FONTS.body2,
     color: COLORS.error,
     // marginBottom: SIZES.padding,
+  },
+
+  dateTextWhite: {
+    ...FONTS.h3,
+    color: COLORS.surface,
+    textAlign: "center",
   },
 
 

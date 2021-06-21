@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 import locationActions from "../../redux/actions/locationActions";
 import ReportInfo from "./components/ReportInfo";
 import { COLORS } from "../../constants/theme";
-import axios from "axios";
+import axios from "../../api/axiosHelper";
 
 const MapScreen = ({ route, navigation, locationReset, locationAdd, reports, users }) => {
   const [myCoords, setMyCoords] = useState({});
@@ -61,7 +61,7 @@ const MapScreen = ({ route, navigation, locationReset, locationAdd, reports, use
 
     locationReset();
 
-    const api = "https://mobilki-backend.herokuapp.com/activeRequests/byArea?";
+    const api = "activeRequests/byArea?";
     const params = new URLSearchParams({
       latitudeMAX: square.maxLatitude,
       latitudeMIN: square.minLatitude,
@@ -147,29 +147,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapScreen);
-
-const customData = [
-  {
-    longitude: 21.158,
-    latitude: 51.427,
-  },
-  {
-    longitude: 21.159,
-    latitude: 51.427,
-  },
-  {
-    longitude: 21.156,
-    latitude: 51.427,
-  },
-  {
-    longitude: 21.158,
-    latitude: 51.428,
-  },
-  {
-    longitude: 21.158,
-    latitude: 51.426,
-  },
-];
 
 const styles = StyleSheet.create({
   refreshButton: {

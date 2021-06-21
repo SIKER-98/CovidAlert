@@ -3,7 +3,7 @@ import { Alert, BackHandler, StyleSheet, Text, TextInput, TouchableOpacity, View
 import { COLORS, FONTS, SIZES } from "../../constants/theme";
 import { connect, useSelector } from "react-redux";
 import findCoordinates from "../../functions/findCoordinates";
-import axios from "axios";
+import axios from "../../api/axiosHelper";
 
 
 // const HelpScreen = ({ route, navigation, addReport }) => {
@@ -19,14 +19,14 @@ const HelpScreen = ({ route, navigation }) => {
   }
 
   const pushRequest = async (item) => {
-    const api = "https://mobilki-backend.herokuapp.com/activeRequests/add";
+    const api = "activeRequests/add";
 
     let status = -1;
     console.log(item);
 
-    const params = new URLSearchParams(item)
+    const params = new URLSearchParams(item);
 
-    await axios.post(api+'?'+params)
+    await axios.post(api + "?" + params)
       .then(res => {
         console.log(res.status);
         status = res.status;
